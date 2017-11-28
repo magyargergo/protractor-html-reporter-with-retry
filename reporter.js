@@ -207,7 +207,7 @@ class Reporter {
         return (new Date()).toISOString();
     }
 
-    consolidateReports() {
+    combineReports() {
         let parts = this.options.path.split('/');
         let targetDirectory = this.options.path.split(parts[parts.length - 1])[0];
         let reporterDirectory = parts[parts.length - 1].split(/[^a-zA-Z]+/g)[0];
@@ -277,12 +277,12 @@ class Reporter {
                     });
                 }
                 if (output == null) {
-                    output = fs.readFileSync('node_modules/macedonia-protractor-reporter/consolidatedreport.html');
+                    output = fs.readFileSync('node_modules/fancy-protractor-reporter/CReport.html');
                 }
                 times++;
             }
         });
-        fs.writeFileSync(targetDirectory + 'ConsolidatedReport.html', output, 'utf8');
+        fs.writeFileSync(targetDirectory + 'CReport.html', output, 'utf8');
         var dataInString = 'window.RESULTS.push(' + JSON.stringify(allData) + ');';
         fs.writeFileSync(targetDirectory + 'data/1.js', dataInString, 'utf8');
     }

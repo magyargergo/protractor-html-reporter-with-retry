@@ -1,5 +1,5 @@
 {
-  "name": "macedonia-protractor-reporter",
+  "name": "fancy-protractor-reporter",
   "description": "an easy to use html page for looking at protractor test results with option to combine results when reruning failed tests",
   "author": "vdimikj",
   "main": "index.js",
@@ -8,6 +8,7 @@
     "jasmine",
     "protractor",
     "pretty",
+    "fancy",
     "html",
     "reporter",
     "macedonia",
@@ -18,10 +19,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/vdimikj/macedonia-protractor-reporter.git"
+    "url": "https://github.com/vdimikj/fancy-protractor-reporter.git"
   },
   "issues": {
-    "url": "https://github.com/vdimikj/macedonia-protractor-reporter/issues"
+    "url": "https://github.com/vdimikj/fancy-protractor-reporter/issues"
   },
   "peerDependencies": {
     "jasmine": "^2.4.1"
