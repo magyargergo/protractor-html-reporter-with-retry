@@ -206,6 +206,86 @@ class Reporter {
     static nowString() {
         return (new Date()).toISOString();
     }
+
+    combineReports() {
+        let parts = this.options.path.split('/');
+        let targetDirectory = this.options.path.split(parts[parts.length - 1])[0];
+        let reporterDirectory = parts[parts.length - 1].split(/[^a-zA-Z]+/g)[0];
+        let fs = require('fs');
+        let output = null;
+        let times = 0;
+        let data;
+        let img;
+        let allData = null;
+        let firstjs = null;
+        let allSequences = null;
+
+        if (!fs.existsSync(targetDirectory + 'data')) {
+            fs.mkdirSync(targetDirectory + 'data');
+        }
+        if (!fs.existsSync(targetDirectory + 'img')) {
+            fs.mkdirSync(targetDirectory + 'img');
+        }
+
+        fs.readdirSync(targetDirectory).forEach(function (file) {
+
+            if (file.includes(reporterDirectory)) {
+
+                if (!(fs.lstatSync(targetDirectory + file + '/report.html').isDirectory())) {
+                    fs.readdirSync(targetDirectory + file + '/data').forEach(function (filejs) {
+                        let currentDataBuffer = fs.readFileSync(targetDirectory + file + '/data/' + filejs, 'utf8');
+                        let currentData = JSON.parse(currentDataBuffer.slice(20, (currentDataBuffer.length - 2)));
+
+                        if (allData == null) {
+                            allData = currentData;
+                            firstjs = filejs;
+                            allData.sequence.forEach(data => {
+                                data.times = 1;
+                                data.successTimes = 0;
+                                if (data.status === 'passed') {
+                                    data.successTimes++;
+                                }
+                                let deepCopySpecs = JSON.parse(JSON.stringify(data));
+                                data.allSpecs = [deepCopySpecs];
+                            });
+                        } else {
+                            allData.timer.duration += currentData.timer.duration;
+                            allData.counts.specs += currentData.counts.specs;
+                            allData.counts.passed += currentData.counts.passed;
+                            allData.counts.failed += currentData.counts.failed;
+                            allData.counts.pending += currentData.counts.pending;
+
+                            allData.sequence.forEach(function (allDataOneSequence) {
+                                currentData.sequence.forEach(function (currentDataOneSequence) {
+                                    if (allDataOneSequence.description === currentDataOneSequence.description && allDataOneSequence.status != 'disabled') {
+
+                                        allDataOneSequence.times++;
+                                        if (currentDataOneSequence.status === 'passed') {
+                                            allDataOneSequence.successTimes++;
+                                            allDataOneSequence.status = 'passed';
+                                        }
+                                        allDataOneSequence.allSpecs = allDataOneSequence.allSpecs.concat(currentDataOneSequence);
+                                        return;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                    fs.readdirSync(targetDirectory + file + '/img').forEach(function (img) {
+                        let readStream = fs.createReadStream(targetDirectory + file + '/img/' + img);
+                        readStream.pipe(fs.createWriteStream(targetDirectory + 'img/' + img));
+                    });
+                }
+                if (output == null) {
+                    output = fs.readFileSync('node_modules/fancy-protractor-reporter/CReport.html');
+                }
+                times++;
+            }
+        });
+        fs.writeFileSync(targetDirectory + 'CReport.html', output, 'utf8');
+        var dataInString = 'window.RESULTS.push(' + JSON.stringify(allData) + ');';
+        fs.writeFileSync(targetDirectory + 'data/1.js', dataInString, 'utf8');
+    }
 }
 
 module.exports = Reporter;
