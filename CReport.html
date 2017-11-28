@@ -148,19 +148,10 @@
                         <div ng-if="result.pendingReason != ''">
                             <small>{{ result.pendingReason }}</small>
                         </div>
-                        <!--<div ng-repeat="failure in result.failedExpectations">-->
-                        <!--<small>{{ failure.message }}</small>-->
-                        <!--</div>-->
-                        <!--<div ng-if="result.suspectLine">-->
-                        <!--<small>{{result.suspectLine}}</small>-->
-                        <!--</div>-->
                     </div>
                     <div flex="none" style="width: 80px; text-align:right;">
                         <small>{{ result.duration }}</small>
                     </div>
-                    <!--<div flex="none" style="width: 150px">-->
-                    <!--<img width="100%" ng-if="result.screenshotPath" ng-src="{{result.screenshotPath}}"/>-->
-                    <!--</div>-->
                     <div flex="none">
                         <div class="">{{ result.successTimes / result.times * 100 }} %</div>
                     </div>
