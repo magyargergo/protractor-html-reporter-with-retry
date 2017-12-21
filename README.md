@@ -58,6 +58,13 @@ module.exports = {
 #### Reporter Options
 For more options 
 
+#### Examples
+```
+First Example - branch Example1
+Second Example - branch Example2
+
+Git location - https://github.com/vdimikj/protractor-example.git
+```
 
 [Preety protractor](https://www.npmjs.com/package/protractor-pretty-html-reporter)
 
