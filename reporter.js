@@ -272,8 +272,9 @@ class Reporter {
                         }
                     });
                     fs.readdirSync(targetDirectory + file + '/img').forEach(function (img) {
-                        let readStream = fs.createReadStream(targetDirectory + file + '/img/' + img);
-                        readStream.pipe(fs.createWriteStream(targetDirectory + 'img/' + img));
+                        let target = targetDirectory + '/img/' + img;
+                        let source = targetDirectory + file + '/img/' + img;
+                        fs.writeFileSync(target, fs.readFileSync(source));
                     });
                 }
                 if (output == null) {

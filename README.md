@@ -1,18 +1,23 @@
-For of protractor pretty html reporter with another feature of combining reports of several executions when using flake
-
-All credit goes to the owner of protractor pretty html reporter
-
-# protractor pretty html reporter
-[![Build Status](https://travis-ci.org/stuisme/protractor-pretty-html-reporter.svg?branch=master)](https://travis-ci.org/stuisme/protractor-pretty-html-reporter)
-[![Latest Version](https://img.shields.io/github/tag/stuisme/protractor-pretty-html-reporter.svg)](https://github.com/stuisme/protractor-pretty-html-reporter)
-[![NPM Version](https://img.shields.io/npm/v/protractor-pretty-html-reporter.svg)](https://npmjs.org/package/protractor-pretty-html-reporter)
-[![NPM Monthly Downloads](https://img.shields.io/npm/dm/protractor-pretty-html-reporter.svg)](https://npmjs.org/package/protractor-pretty-html-reporter)
-
+# fancy protractor reporter
+_Fork of protractor pretty html reporter with another feature of combining reports of several executions when using flake
+All credit goes to the owner of protractor pretty html reporter_
+[![Build Status](https://travis-ci.org/vdimikj/fancy-protractor-reporter.svg?branch=master)](https://travis-ci.org/stuisme/fancy-protractor-reporter)
+[![Latest Version](https://img.shields.io/github/tag/vdimikj/fancy-protractor-reporter.svg)](https://github.com/stuisme/fancy-protractor-reporter)
+[![NPM Version](https://img.shields.io/npm/v/fancy-protractor-reporter.svg)](https://npmjs.org/package/fancy-protractor-reporter)
+[![NPM Monthly Downloads](https://img.shields.io/npm/dm/fancy-protractor-reporter.svg)](https://npmjs.org/package/fancy-protractor-reporter)
 
 ```
-npm i protractor-pretty-html-reporter --save-dev
+npm i fancy-protractor-reporter --save-dev
 ```
+
 _NOTE: jasmine is set as a peer dependency_
+
+## Advanced features
+- Combining results of several reports
+
+![screen shot](/imgs/test-failing-3-times.png)
+
+[More Screenshots](#more-screenshots-fency)
 
 ## Basic features
 - Pass/Fail at a glance via navbar highlighting
@@ -27,42 +32,42 @@ _NOTE: jasmine is set as a peer dependency_
 
 [More Screenshots](#more-screenshots)
 
-### Basic Setup
+### Setup
 
 protractor.conf
 ```
-var PrettyReporter = require('protractor-pretty-html-reporter').Reporter;
+var FancyReporter = require('fancy-protractor-reporter').Reporter;
 
-var prettyReporter = new PrettyReporter({
-    // required, there is no default
-    path: path.join(__dirname, 'results'),
-    screenshotOnPassed: true
+var fancyReporter = new FancyReporter({
+    path: 'report/fancy' + new Date().toISOString().substring(0,19),
+    screenshotOnPassed: false,
 });
 
 module.exports = {
     /* the rest of the object omitted */
     onPrepare: function() {
-        jasmine.getEnv().addReporter(prettyReporter);
+        jasmine.getEnv().addReporter(fancyReporter);
     },
-    /* if using isSharded option see below */
-    beforeLaunch() {
-        prettyReporter.startReporter();
+    afterLaunch = () => {
+      fancyReporter.combineReports();
     }
 };
 ```
 
-#### Reporter Options
-| Name                  | Type    | Default | Description                                           |
-| --------------------- | ------- | ------- | ----------------------------------------------------- |
-| path                  | String  |         | path the report.html will be written to (required)    |
-| screenshotOnPassed    | Boolean | false   | take screenshots for passing tests too.               |
-| writeReportEachSpec   | Boolean | true    | writes the report.html after each spec completes, this is recommended for long running tests |
-| showBrowser           | Boolean | true    | shows browser icon on the overview                        |
-| highlightSuspectLine  | Boolean | true    | highlight the "suspect line" in the dialog            |
-| isSharded             | Boolean | false   | turn on if using { shardOnSpec: true} option in protractor. See above for beforeLaunch hook that is needed as well. |
 
+#### Reporter Options
+For more options 
+
+
+[Preety protractor](https://www.npmjs.com/package/protractor-pretty-html-reporter)
 
 ## More Screenshots
+
+### Combined results of several executions - success
+![screen shot](/imgs/fail&success.png)
+
+### Combined result of several executions - fail
+![screen shot](/imgs/test-failing-3-times.png)
 
 ### Highlight the suspect line in your stacktrace
 ![screen shot](/imgs/report-test-suspect-line.png)
