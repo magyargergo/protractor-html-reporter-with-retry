@@ -1,8 +1,9 @@
 # fancy protractor reporter
 _Fork of protractor pretty html reporter with another feature of combining reports of several executions when using flake
 All credit goes to the owner of protractor pretty html reporter_
-[![Build Status](https://travis-ci.org/vdimikj/fancy-protractor-reporter.svg?branch=master)](https://travis-ci.org/stuisme/fancy-protractor-reporter)
-[![Latest Version](https://img.shields.io/github/tag/vdimikj/fancy-protractor-reporter.svg)](https://github.com/stuisme/fancy-protractor-reporter)
+
+[![Build Status](https://travis-ci.org/vdimikj/fancy-protractor-reporter.svg?branch=master)](https://travis-ci.org/vdimikj/fancy-protractor-reporter)
+[![Latest Version](https://img.shields.io/github/tag/vdimikj/fancy-protractor-reporter.svg)](https://github.com/vdimikj/fancy-protractor-reporter)
 [![NPM Version](https://img.shields.io/npm/v/fancy-protractor-reporter.svg)](https://npmjs.org/package/fancy-protractor-reporter)
 [![NPM Monthly Downloads](https://img.shields.io/npm/dm/fancy-protractor-reporter.svg)](https://npmjs.org/package/fancy-protractor-reporter)
 
@@ -17,7 +18,7 @@ _NOTE: jasmine is set as a peer dependency_
 
 ![screen shot](/imgs/test-failing-3-times.png)
 
-[More Screenshots](#more-screenshots-fency)
+[More Screenshots](#more-screenshots)
 
 ## Basic features
 - Pass/Fail at a glance via navbar highlighting
