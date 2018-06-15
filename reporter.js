@@ -5,7 +5,25 @@ const path = require('path');
 
 //path setup
 const templatePath = path.join(__dirname, 'report.html');
+const combinedTemplatePath = path.join(__dirname, 'CReport.html');
 const fileContents = fs.readFileSync(templatePath).toString();
+
+const recursiveMakeDirectory = fqdn => {
+    const fqdnParts = fqdn.split(path.sep);
+    fqdnParts.reduce((acc, cur) => {
+        cur = `${acc?acc:''}${cur}${path.sep}`
+        try {
+            if (!fs.existsSync(cur)) {
+                fs.mkdirSync(cur);
+            }
+        } catch (error) {
+          if (path.relative(fqdn,cur) === '') {
+            throw error
+          }
+        }
+        return cur
+    },undefined)
+};
 
 /** A jasmine reporter that produces an html report **/
 class Reporter {
@@ -33,6 +51,13 @@ class Reporter {
             throw new Error('Please provide options.path')
         }
 
+        // remove trailing path separator, it can mess path split elements later on.
+        options.path = options.path[options.path.length - 1] === path.sep ?
+            options.path.slice(0,-1) : options.path;
+
+        const parts = options.path.split(path.sep);
+        this.targetDirectory = path.join(...parts.slice(0,-1));
+
         this.imageLocation = path.join(this.options.path, 'img');
         this.dataLocation = path.join(this.options.path, 'data');
         this.destination = path.join(this.options.path, 'report.html');
@@ -57,11 +82,11 @@ class Reporter {
             return;
         }
 
-        let resultContents = fs.readdirSync(this.dataLocation).map(file => {
+        const resultContents = fs.readdirSync(this.dataLocation).map(file => {
             return `<script src="data/${file}"></script>`;
         }).join('\n');
 
-        let results = fileContents.replace('<!-- inject::scripts -->', resultContents);
+        const results = fileContents.replace('<!-- inject::scripts -->', resultContents);
         fs.writeFileSync(this.destination, results, 'utf8');
 
         this.hasWrittenReportFile = true;
@@ -110,7 +135,9 @@ class Reporter {
 
         // Handle screenshot saving
         if (this.currentSpec.status !== "disabled" && this.currentSpec.status !== "pending" && (this.currentSpec.status !== 'passed' || this.options.screenshotOnPassed)) {
-            this.currentSpec.screenshotPath = `img/${process.pid}-${this.counts.specs}.png`;
+            this.currentSpec.screenshotDirectory = path.join(this.options.path, 'imgr');
+            this.currentSpec.screenshotFilename = `${process.pid}-${this.counts.specs}.png`;
+            this.currentSpec.screenshotPath = path.relative(this.targetDirectory, path.join(this.currentSpec.screenshotDirectory, this.currentSpec.screenshotFilename)).replace(/\\/g,'/');
             this.writeImage(this.currentSpec.base64screenshot);
         }
 
@@ -149,20 +176,21 @@ class Reporter {
     };
 
     writeDataFile() {
-        let logEntry = {
+        const logEntry = {
             options: this.options,
             timer: this.timer,
             counts: this.counts,
             sequence: this.sequence
         };
 
-        let json = JSON.stringify(logEntry, null, !this.options.debugData ? null : 4);
+        const json = JSON.stringify(logEntry, null, !this.options.debugData ? null : 4);
 
         fs.writeFileSync(this.dataFile, `window.RESULTS.push(${json});`, 'utf8');
     }
 
     writeImage(img) {
-        let stream = fs.createWriteStream(path.join(this.options.path, this.currentSpec.screenshotPath));
+        Reporter.makeDirectoryIfNeeded(this.currentSpec.screenshotDirectory);
+        const stream = fs.createWriteStream(path.join(this.currentSpec.screenshotDirectory, this.currentSpec.screenshotFilename));
         stream.write(new Buffer(img, 'base64'));
         stream.end();
     }
@@ -186,7 +214,7 @@ class Reporter {
         }
         if (files.length > 0)
             for (let i = 0; i < files.length; i++) {
-                let filePath = dirPath + '/' + files[i];
+                const filePath = path.join(dirPath, files[i]);
 
                 if (fs.statSync(filePath).isFile()) {
                     fs.unlinkSync(filePath);
@@ -199,7 +227,7 @@ class Reporter {
 
     static makeDirectoryIfNeeded(path) {
         if (!fs.existsSync(path)) {
-            fs.mkdirSync(path);
+            recursiveMakeDirectory(path);
         }
     }
 
@@ -208,10 +236,6 @@ class Reporter {
     }
 
     combineReports() {
-        let parts = this.options.path.split('/');
-        let targetDirectory = this.options.path.split(parts[parts.length - 1])[0];
-        let reporterDirectory = parts[parts.length - 1].split(/[^a-zA-Z]+/g)[0];
-        let fs = require('fs');
         let output = null;
         let times = 0;
         let data;
@@ -219,73 +243,70 @@ class Reporter {
         let allData = null;
         let firstjs = null;
         let allSequences = null;
+        let rootDirectory = this.targetDirectory;
+        const targetDataDirectory = path.join(rootDirectory, 'data')
+        const targetImgDirectory = path.join(rootDirectory, 'img')
+        Reporter.makeDirectoryIfNeeded(targetDataDirectory);
+        Reporter.makeDirectoryIfNeeded(targetImgDirectory);
 
-        if (!fs.existsSync(targetDirectory + 'data')) {
-            fs.mkdirSync(targetDirectory + 'data');
-        }
-        if (!fs.existsSync(targetDirectory + 'img')) {
-            fs.mkdirSync(targetDirectory + 'img');
-        }
+        const files = fs.readdirSync(rootDirectory);
+        files.forEach(function (file) {
+            if (fs.existsSync(path.join(rootDirectory, file, 'report.html'))) {
+                fs.readdirSync(path.join(rootDirectory, file, 'data')).forEach(function (filejs) {
+                    const currentDataBuffer = fs.readFileSync(path.join(rootDirectory,file, 'data', filejs), 'utf8');
+                    const currentData = JSON.parse(currentDataBuffer.slice(20, (currentDataBuffer.length - 2)));
 
-        fs.readdirSync(targetDirectory).forEach(function (file) {
+                    if (allData == null) {
+                        allData = currentData;
+                        firstjs = filejs;
+                        allData.sequence.forEach(data => {
+                            data.times = 1;
+                            data.successTimes = 0;
+                            if (data.status === 'passed') {
+                                data.successTimes++;
+                            }
+                            const deepCopySpecs = JSON.parse(JSON.stringify(data));
+                            data.allSpecs = [deepCopySpecs];
+                        });
+                    } else {
+                        allData.timer.duration += currentData.timer.duration;
+                        allData.counts.specs += currentData.counts.specs;
+                        allData.counts.passed += currentData.counts.passed;
+                        allData.counts.failed += currentData.counts.failed;
+                        allData.counts.pending += currentData.counts.pending;
 
-            if (file.includes(reporterDirectory)) {
+                        allData.sequence.forEach(function (allDataOneSequence) {
+                            currentData.sequence.forEach(function (currentDataOneSequence) {
+                                if (allDataOneSequence.description === currentDataOneSequence.description && allDataOneSequence.status != 'disabled') {
 
-                if (!(fs.lstatSync(targetDirectory + file + '/report.html').isDirectory())) {
-                    fs.readdirSync(targetDirectory + file + '/data').forEach(function (filejs) {
-                        let currentDataBuffer = fs.readFileSync(targetDirectory + file + '/data/' + filejs, 'utf8');
-                        let currentData = JSON.parse(currentDataBuffer.slice(20, (currentDataBuffer.length - 2)));
-
-                        if (allData == null) {
-                            allData = currentData;
-                            firstjs = filejs;
-                            allData.sequence.forEach(data => {
-                                data.times = 1;
-                                data.successTimes = 0;
-                                if (data.status === 'passed') {
-                                    data.successTimes++;
-                                }
-                                let deepCopySpecs = JSON.parse(JSON.stringify(data));
-                                data.allSpecs = [deepCopySpecs];
-                            });
-                        } else {
-                            allData.timer.duration += currentData.timer.duration;
-                            allData.counts.specs += currentData.counts.specs;
-                            allData.counts.passed += currentData.counts.passed;
-                            allData.counts.failed += currentData.counts.failed;
-                            allData.counts.pending += currentData.counts.pending;
-
-                            allData.sequence.forEach(function (allDataOneSequence) {
-                                currentData.sequence.forEach(function (currentDataOneSequence) {
-                                    if (allDataOneSequence.description === currentDataOneSequence.description && allDataOneSequence.status != 'disabled') {
-
-                                        allDataOneSequence.times++;
-                                        if (currentDataOneSequence.status === 'passed') {
-                                            allDataOneSequence.successTimes++;
-                                            allDataOneSequence.status = 'passed';
-                                        }
-                                        allDataOneSequence.allSpecs = allDataOneSequence.allSpecs.concat(currentDataOneSequence);
-                                        return;
+                                    allDataOneSequence.times++;
+                                    if (currentDataOneSequence.status === 'passed') {
+                                        allDataOneSequence.successTimes++;
+                                        allDataOneSequence.status = 'passed';
                                     }
-                                });
+                                    allDataOneSequence.allSpecs = allDataOneSequence.allSpecs.concat(currentDataOneSequence);
+                                    return;
+                                }
                             });
-                        }
-                    });
-                    fs.readdirSync(targetDirectory + file + '/img').forEach(function (img) {
-                        let target = targetDirectory + '/img/' + img;
-                        let source = targetDirectory + file + '/img/' + img;
-                        fs.writeFileSync(target, fs.readFileSync(source));
-                    });
-                }
-                if (output == null) {
-                    output = fs.readFileSync('node_modules/fancy-protractor-reporter/CReport.html');
-                }
-                times++;
+                        });
+                    }
+                });
+                fs.readdirSync(path.join(rootDirectory, file, 'img')).forEach(function (img) {
+                    const target = path.join(rootDirectory, 'img', img);
+                    const source = path.join(rootDirectory, file, 'img', img);
+                    fs.writeFileSync(target, fs.readFileSync(source));
+                });
             }
+            if (output == null) {
+                output = fs.readFileSync(combinedTemplatePath);
+            }
+            times++;
+
         });
-        fs.writeFileSync(targetDirectory + 'CReport.html', output, 'utf8');
-        var dataInString = 'window.RESULTS.push(' + JSON.stringify(allData) + ');';
-        fs.writeFileSync(targetDirectory + 'data/1.js', dataInString, 'utf8');
+        fs.writeFileSync(path.join(rootDirectory,'CReport.html'), output, 'utf8');
+
+        const dataInString = 'window.RESULTS.push(' + JSON.stringify(allData) + ');';
+        fs.writeFileSync(path.join(rootDirectory, 'data', '1.js'), dataInString, 'utf8');
     }
 }
 
