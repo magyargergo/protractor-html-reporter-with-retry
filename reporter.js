@@ -11,18 +11,18 @@ const fileContents = fs.readFileSync(templatePath).toString();
 const recursiveMakeDirectory = fqdn => {
     const fqdnParts = fqdn.split(path.sep);
     fqdnParts.reduce((acc, cur) => {
-        cur = `${acc?acc:''}${cur}${path.sep}`
+        const directory = `${acc?acc:''}${cur}${path.sep}`;
         try {
-            if (!fs.existsSync(cur)) {
-                fs.mkdirSync(cur);
+            if (!fs.existsSync(directory)) {
+                fs.mkdirSync(directory);
             }
         } catch (error) {
-          if (path.relative(fqdn,cur) === '') {
-            throw error
+          if (path.relative(fqdn, directory) === '') {
+            throw error;
           }
         }
-        return cur
-    },undefined)
+        return directory;
+    }, undefined);
 };
 
 /** A jasmine reporter that produces an html report **/
@@ -48,7 +48,7 @@ class Reporter {
         this.setOptions(options);
 
         if (!this.options.path) {
-            throw new Error('Please provide options.path')
+            throw new Error('Please provide options.path');
         }
 
         // remove trailing path separator, it can mess path split elements later on.
@@ -237,15 +237,11 @@ class Reporter {
 
     combineReports() {
         let output = null;
-        let times = 0;
-        let data;
-        let img;
         let allData = null;
-        let firstjs = null;
         let allSequences = null;
         let rootDirectory = this.targetDirectory;
-        const targetDataDirectory = path.join(rootDirectory, 'data')
-        const targetImgDirectory = path.join(rootDirectory, 'img')
+        const targetDataDirectory = path.join(rootDirectory, 'data');
+        const targetImgDirectory = path.join(rootDirectory, 'img');
         Reporter.makeDirectoryIfNeeded(targetDataDirectory);
         Reporter.makeDirectoryIfNeeded(targetImgDirectory);
 
@@ -256,9 +252,8 @@ class Reporter {
                     const currentDataBuffer = fs.readFileSync(path.join(rootDirectory,file, 'data', filejs), 'utf8');
                     const currentData = JSON.parse(currentDataBuffer.slice(20, (currentDataBuffer.length - 2)));
 
-                    if (allData == null) {
+                    if (allData === null) {
                         allData = currentData;
-                        firstjs = filejs;
                         allData.sequence.forEach(data => {
                             data.times = 1;
                             data.successTimes = 0;
@@ -297,13 +292,13 @@ class Reporter {
                     fs.writeFileSync(target, fs.readFileSync(source));
                 });
             }
-            if (output == null) {
+            if (output === null) {
                 output = fs.readFileSync(combinedTemplatePath);
             }
             times++;
 
         });
-        fs.writeFileSync(path.join(rootDirectory,'CReport.html'), output, 'utf8');
+        fs.writeFileSync(path.join(rootDirectory, 'CReport.html'), output, 'utf8');
 
         const dataInString = 'window.RESULTS.push(' + JSON.stringify(allData) + ');';
         fs.writeFileSync(path.join(rootDirectory, 'data', '1.js'), dataInString, 'utf8');
