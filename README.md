@@ -1,4 +1,4 @@
-# fancy protractor reporter
+# protractor html reporter with retry
 _Fork of protractor pretty html reporter with another feature of combining reports of several executions when using flake
 All credit goes to the owner of protractor pretty html reporter_
 
