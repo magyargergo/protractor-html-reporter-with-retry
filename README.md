@@ -1,6 +1,6 @@
 # protractor html reporter with retry
-_Fork of protractor pretty html reporter with another feature of combining reports of several executions when using flake
-All credit goes to the owner of protractor pretty html reporter_
+_Fork of fancy protractor html reporter with another feature to alwayys generate data file with the same names (useful in case of re-running failed testcases)
+All credit goes to the owner of protractor pretty html reporter and fancy protractor reporter_
 
 [![Build Status](https://travis-ci.org/vdimikj/fancy-protractor-reporter.svg?branch=master)](https://travis-ci.org/vdimikj/fancy-protractor-reporter)
 [![Latest Version](https://img.shields.io/github/tag/vdimikj/fancy-protractor-reporter.svg)](https://github.com/vdimikj/fancy-protractor-reporter)
