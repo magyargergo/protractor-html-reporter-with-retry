@@ -1,28 +1,28 @@
 {
-  "name": "fancy-protractor-reporter",
-  "description": "an easy to use html page for looking at protractor test results with option to combine results when reruning failed tests",
-  "author": "vdimikj",
+  "name": "protractor-html-reporter-with-retry",
+  "description": "an easy to use html page for looking at protractor test results with option to overwrite results when reruning failed tests",
+  "author": "laflaneuse",
   "main": "index.js",
-  "version": "0.0.14",
+  "version": "0.0.1",
   "keywords": [
     "jasmine",
     "protractor",
     "pretty",
+    "html",
     "fancy",
     "html",
     "reporter",
-    "macedonia",
-    "flake",
+    "retry",
     "consolidate",
     "combine",
     "results"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/vdimikj/fancy-protractor-reporter.git"
+    "url": "https://github.com/laflaneuse/protractor-html-reporter-with-retry"
   },
   "issues": {
-    "url": "https://github.com/vdimikj/fancy-protractor-reporter/issues"
+    "url": "https://github.com/laflaneuse/protractor-html-reporter-with-retry/issues"
   },
   "peerDependencies": {
     "jasmine": "^2.4.1"
