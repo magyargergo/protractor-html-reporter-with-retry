@@ -21,6 +21,7 @@ class Reporter {
      * @param {Object} options.cleanDirectory=true - clean directory of where reports are saved
      * @param {Object} options.dataFileName=null - use configured string for generated data files
      */
+
     constructor(options) {
         this.sequence = [];
         this.counts = {specs: 0};
@@ -72,34 +73,34 @@ class Reporter {
     }
 
     jasmineStarted(suiteInfo) {
-
         if (!this.options.isSharded) {
             this.startReporter();
         }
+       afterEach((next) => {
+           this.currentSpec.stopped = Reporter.nowString();
+           this.currentSpec.duration = new Date(this.currentSpec.stopped) - new Date(this.currentSpec.started);
+           this.currentSpec.prefix = this.currentSpec.fullName.replace(this.currentSpec.description, '');
 
-        afterEach((next) => {
-            this.currentSpec.stopped = Reporter.nowString();
-            this.currentSpec.duration = new Date(this.currentSpec.stopped) - new Date(this.currentSpec.started);
-            this.currentSpec.prefix = this.currentSpec.fullName.replace(this.currentSpec.description, '');
-
-            browser.takeScreenshot()
-                .then((png) => {
-                    this.currentSpec.base64screenshot = png;
-                })
-                .then(browser.getCapabilities)
-                .then((capabilities) => {
-                    this.currentSpec.browserName = capabilities.get('browserName');
-                    return browser.manage().logs().get('browser');
-                })
-                .then((browserLogs) => {
-                    this.currentSpec.browserLogs = browserLogs;
-                    this.browserLogs.concat(browserLogs);
-                })
-                .then(next, next);
-        });
+           browser.takeScreenshot()
+               .then((png) => {
+                   this.currentSpec.base64screenshot = png;
+               })
+               .then(browser.getCapabilities)
+               .then((capabilities) => {
+                   this.currentSpec.browserName = capabilities.get('browserName');
+                   return browser.manage().logs().get('browser');
+               })
+               .then((browserLogs) => {
+                   this.currentSpec.browserLogs = browserLogs;
+                   this.browserLogs.concat(browserLogs);
+               })
+               .then(next, next);
+       });
     };
 
     suiteStarted(result) {
+      this.currentSpec = result;
+      this.sequence.push(this.currentSpec);
     };
 
     specStarted(result) {
@@ -140,12 +141,13 @@ class Reporter {
     };
 
     suiteDone(result) {
+      this.stopReporter();
     };
 
     jasmineDone() {
         this.timer.stopped = Reporter.nowString();
         this.timer.duration = new Date(this.timer.stopped) - new Date(this.timer.started);
-        this.stopReporter();
+        // this.stopReporter();
     };
 
     setOptions(options) {

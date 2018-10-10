@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Title</title>
+    <title>Protractor Test Results</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.3/angular-material.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
+
+        .prefix {
+            padding: 7px;
+            border-radius: 3px;
+            text-align: left;
+        }
+
         .status {
             width: 85px;
             padding: 7px;
@@ -68,7 +75,8 @@
     <md-content flex>
         <md-list>
             <md-list-item ng-class="result.status" ng-repeat="result in results.sequence" ng-click="showDetail(result)">
-                <div layout="row" flex layout-padding>
+                <strong ng-if="result.id.indexOf('suite') >= 0" class="prefix">{{ result.description }}</strong>
+                <div layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0">
                     <div flex="none">
                         <div class="status">{{ result.status }}</div>
                     </div>
@@ -76,7 +84,7 @@
                         <i ng-class="getBrowserClass(result)" class="fa"></i>
                     </div>
                     <div flex>
-                        <span>{{ result.prefix }}</span><strong>{{ result.description }}</strong>
+                        <span>{{ result.description }}</span>
                         <div ng-if="result.pendingReason != ''">
                             <small>{{ result.pendingReason }}</small>
                         </div>
@@ -88,7 +96,7 @@
                         <!--</div>-->
                     </div>
                     <div flex="none" style="width: 80px; text-align:right;">
-                        <small>{{ result.duration / 1000 }} s</small>
+                        <small>{{ result.duration }}</small>
                     </div>
                     <div flex="none" style="width: 150px">
                         <img width="100%" ng-if="result.screenshotPath" ng-src="{{result.screenshotPath}}"/>
