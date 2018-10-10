@@ -18,6 +18,8 @@ class Reporter {
      * @param {Boolean} options.showBrowser=true - show browser icon on the overview
      * @param {Boolean} options.highlightSuspectLine=true - highlight the "suspect line" in the detail dialog
      * @param {Boolean} options.isSharded=false - use if using shardOnSpec of multiCapabilities options in protractor
+     * @param {Object} options.cleanDirectory=true - clean directory of where reports are saved
+     * @param {Object} options.dataFileName=null - use configured string for generated data files
      */
     constructor(options) {
         this.sequence = [];
@@ -42,7 +44,9 @@ class Reporter {
     }
 
     startReporter() {
-        Reporter.cleanDirectory(this.options.path);
+        if (this.options.cleanDirectory){
+          Reporter.cleanDirectory(this.options.path);
+        }
         Reporter.makeDirectoryIfNeeded(this.options.path);
         Reporter.makeDirectoryIfNeeded(this.imageLocation);
         Reporter.makeDirectoryIfNeeded(this.dataLocation);
@@ -158,6 +162,10 @@ class Reporter {
 
         let json = JSON.stringify(logEntry, null, !this.options.debugData ? null : 4);
 
+        if (this.options.dataFileName  != null) {
+          this.dataFile = path.join(this.dataLocation, `${this.options.dataFileName}.js`);
+        }
+
         fs.writeFileSync(this.dataFile, `window.RESULTS.push(${json});`, 'utf8');
     }
 
@@ -172,7 +180,10 @@ class Reporter {
             screenshotOnPassed: false,
             writeReportEachSpec: true,
             showBrowser: true,
-            highlightSuspectLine: true
+            highlightSuspectLine: true,
+            isSharded: false,
+            cleanDirectory: true,
+            dataFileName: null
         };
     }
 
