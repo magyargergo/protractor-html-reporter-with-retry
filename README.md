@@ -28,6 +28,8 @@ _NOTE: jasmine is set as a peer dependency_
 - Long running test support, report can be refreshed during test runs (see options)
 - Suspect Line, best guess in the stack trace for your code (see options)
 - Screenshots (see options)
+- Cleans the target directory between runs
+- Overwrites test results to have a consolidated view after several retries
 
 ![screen shot](/imgs/report.png)
 
