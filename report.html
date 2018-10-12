@@ -21,12 +21,17 @@
             text-align: center;
         }
 
+       .md-raised.active{
+            background-color: rgb(152, 251, 152);
+            box-shadow: 5px 10px 8px #888888;
+        }
+
         .failed .status {
             background-color: rgb(255, 87, 34);
         }
 
         .passed .status {
-            background-color: rgb(76, 175, 80);
+            background-color: rgb(60, 179, 113);
         }
 
         .pending .status {
@@ -72,23 +77,43 @@
             </h6>
         </div>
     </md-toolbar>
+    <md-toolbar style="background-color: rgb(240,248,255);">
+        <div class="md-toolbar-tools">
+            <label flex style="color: black" >Search: <input ng-model="result.description"></label>
+            <md-button class="md-raised" ng-class="{'active': isPassedActive == true && isButtonActiveAtStart('passed')}"
+                       ng-disabled="!isButtonActiveAtStart('passed')" ng-click="toggleButtonStatus('passed')">Passed
+            </md-button>
+            <md-button class="md-raised" ng-class="{'active': isFailedActive == true && isButtonActiveAtStart('failed')}"
+                       ng-disabled="!isButtonActiveAtStart('failed')" ng-click="toggleButtonStatus('failed')">Failed
+            </md-button>
+            <md-button class="md-raised" ng-class="{'active': isPendingActive == true && isButtonActiveAtStart('pending')}"
+                       ng-disabled="!isButtonActiveAtStart('pending')" ng-click="toggleButtonStatus('pending')">Pending
+            </md-button>
+            <md-button class="md-raised" ng-class="{'active': isDisabledActive == true && isButtonActiveAtStart('disabled')}"
+                       ng-disabled="!isButtonActiveAtStart('disabled')" ng-click="toggleButtonStatus('disabled')">Disabled
+            </md-button>
+        </div>
+    </md-toolbar>
     <md-content flex>
         <md-list>
-            <md-list-item ng-class="result.status" ng-repeat="result in results.sequence" ng-click="showDetail(result)">
+            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.description" ng-click="showDetail(result)">
                 <strong ng-if="result.id.indexOf('suite') >= 0" class="prefix">{{ result.description }}</strong>
                 <div layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0">
                     <div flex="none">
                         <div class="status">{{ result.status }}</div>
                     </div>
-                    <div ng-if="results.options.showBrowser" flex="none">
+                    <div ng-if="filteredResults.options.showBrowser" flex="none">
                         <i ng-class="getBrowserClass(result)" class="fa"></i>
+                    </div>
+                    <div>
+                        <small>{{ result.browserName }} {{ result.version }}</small>
                     </div>
                     <div flex>
                         <span>{{ result.description }}</span>
                         <div ng-if="result.pendingReason != ''">
                             <small>{{ result.pendingReason }}</small>
                         </div>
-                        <div ng-repeat="failure in result.failedExpectations">
+                        <div ng-repeat="failure in result.failedExpectations" style="color: red;">
                             <small>{{ failure.message }}</small>
                         </div>
                         <!--<div ng-if="result.suspectLine">-->
@@ -134,7 +159,7 @@
                     <div flex>
                         <p>{{failure.message}}</p>
                         <small>
-                            <pre class="stack" ng-class="{'highlight': (results.options.highlightSuspectLine && line === failure.suspectLine) }" ng-repeat="line in failure.stack.split('\n')">{{line}}</pre>
+                            <pre class="stack" ng-class="{'highlight': (filteredResults.options.highlightSuspectLine && line === failure.suspectLine) }" ng-repeat="line in failure.stack.split('\n')">{{line}}</pre>
                         </small>
                     </div>
                 </div>
@@ -189,12 +214,20 @@
             'failed': 'md-warn'
         };
 
-        $scope.results = RESULTS.reduce(function(combined, result) {
+        $scope.isPassedActive = true;
+        $scope.isFailedActive = true;
+        $scope.isPendingActive = true;
+        $scope.isDisabledActive = true;
 
+        $scope.results = RESULTS.reduce(function(combined, result) {
           combined.options = combined.options || result.options;
           combined.timer = combined.timer || result.timer;
 
           combined.sequence = combined.sequence.concat(result.sequence);
+
+          for (var i = 0; i < combined.sequence.length; i++) {
+            combined.sequence[i].rank = i+1;
+          }
 
           // sum the counts
           Object.keys(result.counts).forEach(function(key) {
@@ -208,6 +241,8 @@
           counts: {},
           sequence: []
         });
+
+        $scope.filteredResults = $scope.results;
 
         $scope.showDetail = function (item) {
             $scope.activeItem = item;
@@ -229,6 +264,90 @@
             return classes[item.status];
         };
 
+        $scope.isButtonActiveAtStart = function(status) {
+          var initialStatus;
+          switch(status) {
+            case 'passed':
+              initialStatus = ($scope.results.counts.passed > 0);
+              break;
+            case 'failed':
+              initialStatus = $scope.results.counts.failed > 0;
+              break;
+            case 'pending':
+              initialStatus = $scope.results.counts.pending > 0;
+              break;
+            case 'disabled':
+              initialStatus = $scope.results.counts.disabled > 0;
+              break;
+            default:
+              initialStatus = true;
+          }
+          return initialStatus;
+        };
+
+        $scope.toggleButtonStatus = function(status) {
+          switch(status) {
+            case 'passed':
+              $scope.isPassedActive = !$scope.isPassedActive;
+              this.setFilteredResults('passed');
+              break;
+            case 'failed':
+              $scope.isFailedActive = !$scope.isFailedActive;
+              this.setFilteredResults('failed');
+              break;
+            case 'pending':
+              $scope.isPendingActive = !$scope.isPendingActive;
+              this.setFilteredResults('pending');
+              break;
+            case 'disabled':
+              $scope.isDisabledActive = !$scope.isDisabledActive;
+              this.setFilteredResults('disabled');
+              break;
+          }
+        };
+
+        $scope.setFilteredResults = function(action) {
+          var revertedResults = [];
+           switch(action) {
+            case 'passed':
+              if ($scope.isPassedActive) {
+                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'passed'));
+                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+              }
+              else {
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'passed');
+              }
+              break;
+            case 'failed':
+              if ($scope.isFailedActive) {
+                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'failed'));
+                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+              }
+              else {
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'failed');
+              }
+              break;
+            case 'pending':
+              if ($scope.isPendingActive) {
+                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'pending'));
+                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+              }
+              else {
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'pending');
+              }
+              break;
+            case 'disabled':
+              if ($scope.isDisabledActive) {
+                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'disabled'));
+                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+              }
+              else {
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'disabled');
+              }
+              break;
+          }
+          $scope.filteredResults.sequence.sort(function (a, b) {return a.rank - b.rank;  });
+        }
     }).constant('RESULTS', RESULTS);
 </script>
 

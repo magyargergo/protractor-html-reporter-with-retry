@@ -1,9 +1,9 @@
 {
   "name": "protractor-html-reporter-with-retry",
-  "description": "an easy to use html page for looking at protractor test results with option to overwrite results when reruning failed tests",
+  "description": "an easy to use html page for looking at protractor test results with option to overwrite results when re-running failed tests",
   "author": "laflaneuse",
   "main": "index.js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "keywords": [
     "jasmine",
     "protractor",
