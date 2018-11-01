@@ -21,9 +21,43 @@
             text-align: center;
         }
 
-       .md-raised.active{
+        .md-raised.active{
             background-color: rgb(152, 251, 152);
             box-shadow: 5px 10px 8px #888888;
+        }
+
+        .level1 {
+          font-size: 24px;
+        }
+
+        .level2 {
+          font-size: 20px;
+          transform: translateX(30px);
+        }
+
+        .level3 {
+          font-size: 18px;
+          transform: translateX(60px);
+        }
+
+        .level4 {
+          font-size: 16px;
+          transform: translateX(80px);
+        }
+
+        .level5 {
+          font-size: 14px;
+          transform: translateX(100px);
+        }
+
+        .level6 {
+          font-size: 14px;
+          transform: translateX(130px);
+        }
+
+        .level7, .level8 {
+          font-size: 14px;
+          transform: translateX(160px);
         }
 
         .failed .status {
@@ -97,7 +131,7 @@
     <md-content flex>
         <md-list>
             <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.description" ng-click="showDetail(result)">
-                <strong ng-if="result.id.indexOf('suite') >= 0" class="prefix">{{ result.description }}</strong>
+                <strong ng-if="result.id.indexOf('suite') >= 0" class="{{result.level}}">{{ result.description }}</strong>
                 <div layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0">
                     <div flex="none">
                         <div class="status">{{ result.status }}</div>
@@ -227,6 +261,12 @@
 
           for (var i = 0; i < combined.sequence.length; i++) {
             combined.sequence[i].rank = i+1;
+            if (combined.sequence[i].id.indexOf('suite') >= 0) {
+              combined.sequence[i].level = combined.sequence[i].id.split('%%')[1];
+            }
+            else {
+              combined.sequence[i].level = 'default';
+            }
           }
 
           // sum the counts

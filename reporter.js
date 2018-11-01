@@ -6,6 +6,8 @@ const path = require('path');
 //path setup
 const templatePath = path.join(__dirname, 'report.html');
 const fileContents = fs.readFileSync(templatePath).toString();
+let suiteCount = 1;
+let suiteStarted = true;
 
 /** A jasmine reporter that produces an html report **/
 class Reporter {
@@ -99,8 +101,13 @@ class Reporter {
     };
 
     suiteStarted(result) {
+      result.id = result.id + "%%level" +  suiteCount;
       this.currentSpec = result;
       this.sequence.push(this.currentSpec);
+      if (suiteStarted == true) {
+        suiteCount++;
+      }
+      suiteStarted = true;
     };
 
     specStarted(result) {
@@ -141,6 +148,7 @@ class Reporter {
     };
 
     suiteDone(result) {
+      suiteCount--;
       this.stopReporter();
     };
 
