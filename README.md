@@ -1,5 +1,5 @@
 # protractor html reporter with retry
-_Fork of fancy protractor html reporter with another feature to alwayys generate data file with the same names (useful in case of re-running failed testcases)
+_Fork of fancy protractor html reporter with another feature to alwayys generate data files with the same names (useful in case of re-running failed testcases)
 All credit goes to the owner of protractor pretty html reporter and fancy protractor reporter_
 
 [![Build Status](https://travis-ci.org/vdimikj/fancy-protractor-reporter.svg?branch=master)](https://travis-ci.org/vdimikj/fancy-protractor-reporter)
