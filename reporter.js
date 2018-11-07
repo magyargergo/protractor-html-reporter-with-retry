@@ -90,6 +90,7 @@ class Reporter {
                .then(browser.getCapabilities)
                .then((capabilities) => {
                    this.currentSpec.browserName = capabilities.get('browserName');
+                   this.currentSpec.version = capabilities.get('version');
                    return browser.manage().logs().get('browser');
                })
                .then((browserLogs) => {

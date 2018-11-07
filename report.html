@@ -26,42 +26,64 @@
             box-shadow: 5px 10px 8px #888888;
         }
 
+        .md-list-row:hover {
+          cursor : pointer;
+        }
+
+        .md-list-row:focus {
+          outline: none !important;
+        }
+
         .level1 {
           font-size: 24px;
+          cursor : default;
+          font-weight: bold;
         }
 
         .level2 {
           font-size: 20px;
           transform: translateX(30px);
+          cursor : default;
+          font-weight: bold;
         }
 
         .level3 {
           font-size: 18px;
           transform: translateX(60px);
+          cursor : default;
+          font-weight: bold;
         }
 
         .level4 {
           font-size: 16px;
           transform: translateX(80px);
+          cursor : default;
+          font-weight: bold;
         }
 
         .level5 {
           font-size: 14px;
           transform: translateX(100px);
+          cursor : default;
+          font-weight: bold;
         }
 
         .level6 {
           font-size: 14px;
           transform: translateX(130px);
+          cursor : default;
+          font-weight: bold;
         }
 
         .level7, .level8 {
           font-size: 14px;
           transform: translateX(160px);
+          cursor : default;
+          font-weight: bold;
         }
 
         .failed .status {
-            background-color: rgb(255, 87, 34);
+          background-color: rgb(255, 87, 34);
         }
 
         .passed .status {
@@ -130,9 +152,11 @@
     </md-toolbar>
     <md-content flex>
         <md-list>
-            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.description" ng-click="showDetail(result)">
-                <strong ng-if="result.id.indexOf('suite') >= 0" class="{{result.level}}">{{ result.description }}</strong>
-                <div layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0">
+            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.description">
+                <div ng-if="result.id.indexOf('suite') >= 0" class="{{result.level}}" disabled="true">
+                    {{ result.description }}
+                </div>
+                <div class="md-list-row" layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0" ng-click="showDetail(result)">
                     <div flex="none">
                         <div class="status">{{ result.status }}</div>
                     </div>
