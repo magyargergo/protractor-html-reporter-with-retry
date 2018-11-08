@@ -103,6 +103,12 @@ class Reporter {
 
     suiteStarted(result) {
       result.id = result.id + "%%level" +  suiteCount;
+      if (result.id == 'suite1%%level1') {
+        result.dataFileName = this.options.dataFileName;
+      }
+      else {
+        result.dataFileName ='default';
+      }
       this.currentSpec = result;
       this.sequence.push(this.currentSpec);
       if (suiteStarted == true) {

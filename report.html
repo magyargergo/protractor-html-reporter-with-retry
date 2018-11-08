@@ -21,6 +21,22 @@
             text-align: center;
         }
 
+        .md-test-name {
+          transform: translateX(30px);
+          text-align: center;
+          display: inline-block;
+          font-style: italic;
+          font-size: 20px;
+          border-style: solid;
+          border-color: #33C3FF;
+          padding: 3px;
+          border-radius: 12px;
+          -webkit-border-radius: 12px;
+          -moz-border-radius: 12px;
+
+
+        }
+
         .md-raised.active{
             background-color: rgb(152, 251, 152);
             box-shadow: 5px 10px 8px #888888;
@@ -135,7 +151,7 @@
     </md-toolbar>
     <md-toolbar style="background-color: rgb(240,248,255);">
         <div class="md-toolbar-tools">
-            <label flex style="color: black" >Search: <input ng-model="result.description"></label>
+            <label flex style="color: black" >Search: <input ng-model="result.fullName"></label>
             <md-button class="md-raised" ng-class="{'active': isPassedActive == true && isButtonActiveAtStart('passed')}"
                        ng-disabled="!isButtonActiveAtStart('passed')" ng-click="toggleButtonStatus('passed')">Passed
             </md-button>
@@ -152,9 +168,9 @@
     </md-toolbar>
     <md-content flex>
         <md-list>
-            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.description">
-                <div ng-if="result.id.indexOf('suite') >= 0" class="{{result.level}}" disabled="true">
-                    {{ result.description }}
+            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.fullName">
+                <div ng-if="result.id.indexOf('suite') >= 0" class="{{result.level}}" disabled="true" flex layout-padding>
+                    {{ result.description }} <span class="md-test-name" ng-if="result.dataFileName != 'default'"  >{{ result.dataFileName }}</span>
                 </div>
                 <div class="md-list-row" layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0" ng-click="showDetail(result)">
                     <div flex="none">
