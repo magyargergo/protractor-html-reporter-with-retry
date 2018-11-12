@@ -22,7 +22,7 @@
         }
 
         .md-test-name {
-          transform: translateX(30px);
+          transform: translateX(20px);
           text-align: center;
           display: inline-block;
           font-style: italic;
@@ -110,6 +110,15 @@
             background-color: rgb(255, 255, 0);
         }
 
+        md-checkbox.md-checked.green .md-icon {
+           background-color: rgb(152, 251, 152);
+        }
+
+        div.md-label {
+           color: black;
+           margin-right: 10px;
+        }
+
         /* stack traces */
         pre {
             margin:0;
@@ -151,26 +160,25 @@
     </md-toolbar>
     <md-toolbar style="background-color: rgb(240,248,255);">
         <div class="md-toolbar-tools">
-            <label flex style="color: black" >Search: <input ng-model="result.fullName"></label>
-            <md-button class="md-raised" ng-class="{'active': isPassedActive == true && isButtonActiveAtStart('passed')}"
-                       ng-disabled="!isButtonActiveAtStart('passed')" ng-click="toggleButtonStatus('passed')">Passed
-            </md-button>
-            <md-button class="md-raised" ng-class="{'active': isFailedActive == true && isButtonActiveAtStart('failed')}"
-                       ng-disabled="!isButtonActiveAtStart('failed')" ng-click="toggleButtonStatus('failed')">Failed
-            </md-button>
-            <md-button class="md-raised" ng-class="{'active': isPendingActive == true && isButtonActiveAtStart('pending')}"
-                       ng-disabled="!isButtonActiveAtStart('pending')" ng-click="toggleButtonStatus('pending')">Pending
-            </md-button>
-            <md-button class="md-raised" ng-class="{'active': isDisabledActive == true && isButtonActiveAtStart('disabled')}"
-                       ng-disabled="!isButtonActiveAtStart('disabled')" ng-click="toggleButtonStatus('disabled')">Disabled
-            </md-button>
+            <label flex style="color: black" >Search: <input ng-model="result.fullDescription"></label>
+            <md-checkbox class="green" ng-checked="isPassedActive == true && isButtonActiveAtStart('passed')" aria-label="Passed"
+                         ng-disabled="!isButtonActiveAtStart('passed')" ng-click="toggleButtonStatus('passed')">Passed</md-checkbox>
+
+            <md-checkbox class="green" ng-checked="isFailedActive == true && isButtonActiveAtStart('failed')" aria-label="Failed"
+                         ng-disabled="!isButtonActiveAtStart('failed')" ng-click="toggleButtonStatus('failed')">Failed</md-checkbox>
+
+            <md-checkbox class="green" ng-checked="isPendingActive == true && isButtonActiveAtStart('pending')" aria-label="Pending"
+                         ng-disabled="!isButtonActiveAtStart('pending')" ng-click="toggleButtonStatus('pending')">Pending</md-checkbox>
+
+            <md-checkbox class="green" ng-checked="isDisabledActive == true && isButtonActiveAtStart('disabled')" aria-label="Disabled"
+                         ng-disabled="!isButtonActiveAtStart('disabled')" ng-click="toggleButtonStatus('disabled')">Disabled</md-checkbox>
         </div>
     </md-toolbar>
     <md-content flex>
         <md-list>
-            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter:result.fullName">
+            <md-list-item ng-class="result.status" ng-repeat="result in filteredResults.sequence | filter: result.fullDescription">
                 <div ng-if="result.id.indexOf('suite') >= 0" class="{{result.level}}" disabled="true" flex layout-padding>
-                    {{ result.description }} <span class="md-test-name" ng-if="result.dataFileName != 'default'"  >{{ result.dataFileName }}</span>
+                    {{ result.description }} <span class="md-test-name" ng-if="result.id == 'suite1'"  >{{ result.dataFileName }}</span>
                 </div>
                 <div class="md-list-row" layout="row" flex layout-padding ng-if="result.id.indexOf('spec') >= 0" ng-click="showDetail(result)">
                     <div flex="none">
@@ -278,9 +286,11 @@
 <!-- inject::scripts -->
 
 <script>
-    angular.module('jasmineResults', ['ngMaterial']).config(function ($mdThemingProvider) {
+    var jasmineResults = angular.module('jasmineResults', ['ngMaterial']).config(function ($mdThemingProvider) {
         $mdThemingProvider.theme('default').primaryPalette('green').accentPalette('yellow');
-    }).controller('ResultsCtrl', function ($scope, $mdDialog, RESULTS) {
+    });
+
+    jasmineResults.controller('ResultsCtrl', function ($scope, $mdDialog, RESULTS) {
 
         var classes = {
             'passed': 'md-primary',
@@ -301,12 +311,6 @@
 
           for (var i = 0; i < combined.sequence.length; i++) {
             combined.sequence[i].rank = i+1;
-            if (combined.sequence[i].id.indexOf('suite') >= 0) {
-              combined.sequence[i].level = combined.sequence[i].id.split('%%')[1];
-            }
-            else {
-              combined.sequence[i].level = 'default';
-            }
           }
 
           // sum the counts
@@ -337,12 +341,21 @@
         };
 
         $scope.getBrowserClass = function (item) {
+          if (item.browserName != undefined &&  item.browserName.length > 0) {
             return 'fa-' + item.browserName.replace(' ', '-');
+          }
+          else {
+            return '';
+          }
         };
 
         $scope.getCss = function (item) {
             return classes[item.status];
         };
+
+        $scope.getSuiteTree = function(suiteTree) {
+          return suiteTree.split('%');
+        }
 
         $scope.isButtonActiveAtStart = function(status) {
           var initialStatus;
@@ -386,43 +399,62 @@
           }
         };
 
+        function pushResultsIfUnique(resultsToUpdate, resultsToPush) {
+          for (var i = 0; i < resultsToPush.length; i++){
+            if (resultsToUpdate.includes(resultsToPush[i])){
+              continue;
+            }
+            else {
+              resultsToUpdate.push(resultsToPush[i]);
+            }
+          }
+        };
+
         $scope.setFilteredResults = function(action) {
           var revertedResults = [];
            switch(action) {
             case 'passed':
               if ($scope.isPassedActive) {
-                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'passed'));
-                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+               for (var i = 0; i < RESULTS.length; i++){
+                 revertedResults = RESULTS[i].sequence.filter(item => item.fullStatus.includes('passed'));
+                 pushResultsIfUnique($scope.filteredResults.sequence, revertedResults);
+               }
               }
               else {
-                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'passed');
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => !(item.fullStatus.length == 1 && item.fullStatus[0] === 'passed'));
               }
               break;
             case 'failed':
               if ($scope.isFailedActive) {
-                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'failed'));
-                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+                for (var i = 0; i < RESULTS.length; i++){
+                  revertedResults = RESULTS[i].sequence.filter(item => item.fullStatus.includes('failed'));
+                  pushResultsIfUnique($scope.filteredResults.sequence, revertedResults);
+                }
               }
               else {
-                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'failed');
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => !(item.fullStatus.length == 1 && item.fullStatus[0] === 'failed'));
               }
               break;
             case 'pending':
               if ($scope.isPendingActive) {
-                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'pending'));
-                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+                for (var i = 0; i < RESULTS.length; i++){
+                  revertedResults = RESULTS[i].sequence.filter(item => item.fullStatus.includes('pending'));
+                  pushResultsIfUnique($scope.filteredResults.sequence, revertedResults);
+                }
               }
               else {
-                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'pending');
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => !(item.fullStatus.length == 1 && item.fullStatus[0] === 'pending'));
               }
               break;
             case 'disabled':
               if ($scope.isDisabledActive) {
-                revertedResults = RESULTS[0].sequence.filter(item => (item.status == 'disabled'));
-                Array.prototype.push.apply($scope.filteredResults.sequence, revertedResults);
+                for (var i = 0; i < RESULTS.length; i++){
+                  revertedResults = RESULTS[i].sequence.filter(item => item.fullStatus.includes('disabled'));
+                  pushResultsIfUnique($scope.filteredResults.sequence, revertedResults);
+                }
               }
               else {
-                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => item.status !== 'disabled');
+                $scope.filteredResults.sequence = $scope.filteredResults.sequence.filter(item => !(item.fullStatus.length == 1 && item.fullStatus[0] === 'disabled'));
               }
               break;
           }

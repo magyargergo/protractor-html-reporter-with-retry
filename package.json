@@ -3,7 +3,7 @@
   "description": "an easy to use html page for looking at protractor test results with option to overwrite results when re-running failed tests",
   "author": "laflaneuse",
   "main": "index.js",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "keywords": [
     "jasmine",
     "protractor",

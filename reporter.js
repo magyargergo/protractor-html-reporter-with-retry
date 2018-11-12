@@ -8,6 +8,7 @@ const templatePath = path.join(__dirname, 'report.html');
 const fileContents = fs.readFileSync(templatePath).toString();
 let suiteCount = 1;
 let suiteStarted = true;
+let suiteTree = '';
 
 /** A jasmine reporter that produces an html report **/
 class Reporter {
@@ -58,6 +59,8 @@ class Reporter {
     }
 
     stopReporter() {
+       this.setFullInfoInSuites();
+
         this.writeDataFile();
 
         if (this.hasWrittenReportFile) {
@@ -102,13 +105,12 @@ class Reporter {
     };
 
     suiteStarted(result) {
-      result.id = result.id + "%%level" +  suiteCount;
-      if (result.id == 'suite1%%level1') {
-        result.dataFileName = this.options.dataFileName;
-      }
-      else {
-        result.dataFileName ='default';
-      }
+      // used for locating structure of spec (needed for filtering)
+      suiteTree = result.id == 'suite1' ? result.id : suiteTree + '%' + result.id;
+      // used for css in html report
+      result.level = "level" +  suiteCount;
+      // used for display of search results
+      result.dataFileName = this.options.dataFileName;
       this.currentSpec = result;
       this.sequence.push(this.currentSpec);
       if (suiteStarted == true) {
@@ -118,6 +120,7 @@ class Reporter {
     };
 
     specStarted(result) {
+        result.suiteTree = suiteTree;
         this.counts.specs++;
         this.currentSpec = result;
         this.currentSpec.started = Reporter.nowString();
@@ -155,6 +158,7 @@ class Reporter {
     };
 
     suiteDone(result) {
+      suiteTree = suiteTree.substring(0, suiteTree.lastIndexOf('%'));
       suiteCount--;
       this.stopReporter();
     };
@@ -168,6 +172,27 @@ class Reporter {
     setOptions(options) {
         this.options = Object.assign(this.options, options);
     };
+
+    setFullInfoInSuites() {
+      for (var i = 0; i < this.sequence.length; i++){
+        var fullStatus =  [];
+        if (this.sequence[i].id.indexOf('spec') >= 0){
+          fullStatus.push(this.sequence[i].status);
+          // continue;
+        }
+        else {
+          var fullDescription =  this.sequence[i].description;
+          for (var j = i + 1 ; j < this.sequence.length; j++ ){
+            fullDescription = fullDescription + '%' + this.sequence[j].description;
+            if (this.sequence[j].id.indexOf('spec') >= 0 && !fullStatus.includes(this.sequence[j].status)) {
+              fullStatus.push(this.sequence[j].status);
+            }
+          }
+          this.sequence[i].fullDescription = fullDescription;
+        }
+        this.sequence[i].fullStatus = fullStatus;
+      }
+    }
 
     writeDataFile() {
         let logEntry = {
