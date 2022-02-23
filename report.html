@@ -142,7 +142,7 @@
 <div ng-cloak layout="column">
     <md-toolbar ng-class="{'md-warn': results.counts.failed}">
         <div class="md-toolbar-tools">
-            <h2 flex md-truncate>Results <small ng-if="results.timer.duration"> - executed in {{ results.timer.duration / 1000 }} seconds</small></h2>
+            <h2 flex md-truncate>Results <small ng-if="results.timer.duration"> - executed in {{ results.timer.duration }} seconds</small></h2>
             <h6>
                 <span ng-if="results.counts.passed">Passed: {{ results.counts.passed }}</span>
                 <br ng-if="results.counts.passed"/>
