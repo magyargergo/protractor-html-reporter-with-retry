@@ -263,7 +263,7 @@ class Reporter {
     combineReports() {
         let parts = this.options.path.split('/');
         let targetDirectory = this.options.path.split(parts[parts.length - 1])[0];
-        let reporterDirectory = parts[parts.length - 1].split(/[^a-zA-Z]+/g)[0];
+        let reporterDirectory = parts[parts.length - 1];
         let fs = require('fs');
         let output = null;
         let times = 0;
