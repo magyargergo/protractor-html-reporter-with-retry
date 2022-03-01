@@ -25,7 +25,7 @@
     "url": "https://github.com/laflaneuse/protractor-html-reporter-with-retry/issues"
   },
   "peerDependencies": {
-    "jasmine": "^2.4.1"
+    "jasmine": "^3.6.2"
   },
   "license": "MIT"
 }

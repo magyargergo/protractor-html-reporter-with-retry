@@ -127,6 +127,9 @@ class Reporter {
     };
 
     specDone(result) {
+        if (this.currentSpec.id === result.id) {
+            this.currentSpec.status = result.status;
+        }
         this.counts[this.currentSpec.status] = (this.counts[this.currentSpec.status] || 0) + 1;
         this.sequence.push(this.currentSpec);
 
