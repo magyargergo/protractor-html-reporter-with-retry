@@ -144,15 +144,18 @@ class Reporter {
 
         // suspectLine
         result.failedExpectations.forEach(failure => {
-            failure.hasSuspectLine = failure.stack.split('\n').some(function (line) {
-                let match = line.indexOf('Error:') === -1 && line.indexOf('node_modules') === -1;
+            failure.hasSuspectLine =
+                failure.stack
+                    ? failure.stack.split('\n').some(function (line) {
+                        let match = line.indexOf('Error:') === -1 && line.indexOf('node_modules') === -1;
 
-                if (match) {
-                    failure.suspectLine = line;
-                }
+                        if (match) {
+                          failure.suspectLine = line;
+                        }
 
-                return match;
-            });
+                        return match;
+                    })
+                    : false;
         });
 
         if (this.options.writeReportEachSpec) {
