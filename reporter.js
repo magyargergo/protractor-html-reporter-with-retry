@@ -23,6 +23,7 @@ class Reporter {
      * @param {Boolean} options.isSharded=false - use if using shardOnSpec of multiCapabilities options in protractor
      * @param {Object} options.cleanDirectory=true - clean directory of where reports are saved
      * @param {Object} options.dataFileName=null - use configured string for generated data files
+     * @param {Array} options.defaultStatuses=[] - the default statuses to show (passed/failed/pending/disabled)
      */
 
     constructor(options) {
@@ -231,7 +232,8 @@ class Reporter {
             highlightSuspectLine: true,
             isSharded: false,
             cleanDirectory: true,
-            dataFileName: null
+            dataFileName: null,
+            defaultStatuses: [],
         };
     }
 

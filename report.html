@@ -460,6 +460,16 @@
           }
           $scope.filteredResults.sequence.sort(function (a, b) {return a.rank - b.rank;  });
         }
+
+        this.$onInit = function () {
+          if ($scope.results.options.defaultStatuses.length) {
+            ['passed', 'failed', 'pending', 'disabled'].forEach(status => {
+              if (!$scope.results.options.defaultStatuses.includes(status)) {
+                $scope.toggleButtonStatus(status);
+              }
+            });
+          }
+        };
     }).constant('RESULTS', RESULTS);
 </script>
 
